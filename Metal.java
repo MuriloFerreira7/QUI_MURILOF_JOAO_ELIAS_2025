@@ -2,6 +2,15 @@ public class Metal {
     private String nome;
     private float potencialReducao;
     private int carga;
+    private String estado;
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
 
     public Metal(String nome, float potencialReducao, int carga) {
         this.nome = nome;

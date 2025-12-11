@@ -18,10 +18,21 @@ public class Main {
         Object opcao2 = JOptionPane.showInputDialog(null, null, "escolha outra espécie", JOptionPane.QUESTION_MESSAGE, null, nomeMetais, nomeMetais[0]);
         Metal m1 = procurarMetal((String) opcao1, metais);
         Metal m2 = procurarMetal((String) opcao2, metais);
+        String[] opcoes = {"Aquoso", "Solido"};
+        Object estadoM1 = JOptionPane.showInputDialog(null, null, "Qual é o estado do " + m1.getNome(), JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes[0]);
+        Object estadoM2 = JOptionPane.showInputDialog(null, null, "Qual é o estado do " + m2.getNome(), JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes[0]);
+        m1.setEstado((String) estadoM1);
+        m2.setEstado((String) estadoM2);
+        if (m1.getEstado().equals(m2.getEstado())) {
+            JOptionPane.showMessageDialog(null, "Os estados dos metais NÃO podem ser iguais", "ERRO", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         String msg;
         if (m1.getPotencialReducao() == m2.getPotencialReducao()) {
             msg = "as espécies tem o mesmo potencial de redução. A pilha não funciona";
             JOptionPane.showMessageDialog(null, msg, "ERRO", JOptionPane.ERROR_MESSAGE);
+            return;
         } else if (m1.getPotencialReducao() > m2.getPotencialReducao()) {
             float potencialPilha = m1.getPotencialReducao() - m2.getPotencialReducao();
             msg = "O metal que reduz é " + m1.getNome() + "\nO metal que oxida é " + m2.getNome() + "\nO potencial da pilha é " + potencialPilha + "\n";
@@ -36,35 +47,53 @@ public class Main {
 
     public static String formarEquacao(Metal m1, Metal m2) {
 
-        // Quem reduz, quem oxida
-        Metal reduz = m1.getPotencialReducao() > m2.getPotencialReducao() ? m1 : m2;
-        Metal oxida = reduz == m1 ? m2 : m1;
+        // Definir estados químicos
+        String estado1 = m1.getEstado().equalsIgnoreCase("Solido") ? "(s)" : "(aq)";
+        String estado1Ion = "(aq)"; // íons sempre aquosos
+
+        String estado2 = m2.getEstado().equalsIgnoreCase("Solido") ? "(s)" : "(aq)";
+        String estado2Ion = "(aq)";
+
+        Metal reduz;
+        Metal oxida;
+
+        if (m1.getPotencialReducao() > m2.getPotencialReducao()) {
+            reduz = m1;
+            oxida = m2;
+        } else {
+            reduz = m2;
+            oxida = m1;
+        }
 
         int eRed = reduz.getCarga();
         int eOx = oxida.getCarga();
 
-        // Balancear elétrons
         int mmc = mmc(eRed, eOx);
         int fatorRed = mmc / eRed;
         int fatorOx = mmc / eOx;
 
-        // Semi-reações
+        String reduzMetal = reduz.getEstado().equalsIgnoreCase("Solido") ? "(s)" : "(aq)";
+        String reduzIon = "(aq)";
+        String oxidaMetal = oxida.getEstado().equalsIgnoreCase("Solido") ? "(s)" : "(aq)";
+        String oxidaIon = "(aq)";
+
         String semiOx
-                = fatorOx + oxida.getNome() + "(s) → "
-                + fatorOx + oxida.getNome() + "^" + oxida.getCarga() + "+(aq) + "
-                + (fatorOx * eOx) + " e⁻";
+                = fatorOx + oxida.getNome() + oxidaMetal + " → "
+                + fatorOx + oxida.getNome() + "^" + oxida.getCarga() + "+" + oxidaIon
+                + " + " + (fatorOx * eOx) + " e⁻";
 
         String semiRed
-                = fatorRed + reduz.getNome() + "^" + reduz.getCarga() + "+(aq) + "
-                + (fatorRed * eRed) + " e⁻ → "
-                + fatorRed + reduz.getNome() + "(s)";
+                = fatorRed + reduz.getNome() + "^" + reduz.getCarga() + "+" + reduzIon
+                + " + " + (fatorRed * eRed) + " e⁻ → "
+                + fatorRed + reduz.getNome() + reduzMetal;
 
-        // Equação global
         String global
-                = fatorOx + oxida.getNome() + "(s) + "
-                + fatorRed + reduz.getNome() + "^" + reduz.getCarga() + "+(aq) → "
-                + fatorOx + oxida.getNome() + "^" + oxida.getCarga() + "+(aq) + "
-                + fatorRed + reduz.getNome() + "(s)";
+                = fatorOx + oxida.getNome() + oxidaMetal + " + "
+                + fatorRed + reduz.getNome() + "^" + reduz.getCarga() + "+" + reduzIon
+                + " → "
+                + fatorOx + oxida.getNome() + "^" + oxida.getCarga() + "+" + oxidaIon
+                + " + "
+                + fatorRed + reduz.getNome() + reduzMetal;
 
         return "Oxidação:\n" + semiOx
                 + "\n\nRedução:\n" + semiRed
