@@ -1,0 +1,61 @@
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Scanner;
+import javax.swing.JOptionPane;
+
+public class Main {
+    final static Scanner l = new Scanner(System.in);
+    public static void main(String[] args) {
+        ArrayList<Metal> metais = lerArquivos("metais.txt");
+        String[] nomeMetais = new String[metais.size()];
+        for (int i = 0; i < metais.size(); i++) {
+            nomeMetais[i] = metais.get(i).getNome();
+        }
+        Object opcao1 = JOptionPane.showInputDialog(null, null, "escolha uma espécie", JOptionPane.QUESTION_MESSAGE, null, nomeMetais, nomeMetais[0]);
+        Object opcao2 = JOptionPane.showInputDialog(null, null, "escolha outra espécie", JOptionPane.QUESTION_MESSAGE, null, nomeMetais, nomeMetais[0]);
+        Metal m1 = procurarMetal((String) opcao1, metais);
+        Metal m2 = procurarMetal((String) opcao2, metais);
+        String msg;
+        if (m1.getPotencialReducao() == m2.getPotencialReducao()) {
+            msg = "as espécies tem o mesmo potencial de redução. A pilha não funciona";
+            JOptionPane.showMessageDialog(null, msg, "ERRO", JOptionPane.ERROR_MESSAGE);
+        } else if(m1.getPotencialReducao() > m2.getPotencialReducao()) {
+            float potencialPilha = m1.getPotencialReducao()-m2.getPotencialReducao();
+            msg = "O metal que reduz é " + m1.getNome() + "\nO metal que oxida é " + m2.getNome() + "\nO potencial da pilha é " + potencialPilha + "\n";
+            JOptionPane.showMessageDialog(null, msg, "potencial da pilha", JOptionPane.INFORMATION_MESSAGE);
+        } else if(m2.getPotencialReducao() > m1.getPotencialReducao()) {
+            float potencialPilha = m2.getPotencialReducao()-m1.getPotencialReducao();
+            msg = "O metal que reduz é " + m2.getNome() + "\nO metal que oxida é " + m1.getNome() + "\nO potencial da pilha é " + potencialPilha + "\n";
+            JOptionPane.showMessageDialog(null, msg, "potencial da pilha", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    public static ArrayList<Metal> lerArquivos(String arquivo) {
+        ArrayList<Metal> metais = new ArrayList<>();
+        try {
+            File file = new File(arquivo);
+            Scanner input = new Scanner(file);
+
+            while (input.hasNextLine()) {
+                String valor = input.nextLine();
+                String nome = valor.substring(0, valor.indexOf(" "));
+                String carga = valor.substring((valor.indexOf(" ") + 1), valor.lastIndexOf(" "));
+                String potencialReducao = valor.substring((valor.lastIndexOf(" ") + 1));
+                metais.add(new Metal(nome, Float.parseFloat(potencialReducao), Integer.parseInt(carga)));
+            }
+
+            input.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao ler o arquivo!!", "ERRO", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+        return metais;
+    }
+
+    public static Metal procurarMetal(String nome, ArrayList<Metal> metais) {
+        for (int i = 0; i < metais.size(); i++) {
+            if (metais.get(i).getNome().equals(nome)) return metais.get(i);
+        }
+        return null;
+    }
+}
