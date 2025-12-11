@@ -1,10 +1,13 @@
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 public class Main {
+
     final static Scanner l = new Scanner(System.in);
+
     public static void main(String[] args) {
         ArrayList<Metal> metais = lerArquivos("metais.txt");
         String[] nomeMetais = new String[metais.size()];
@@ -19,15 +22,59 @@ public class Main {
         if (m1.getPotencialReducao() == m2.getPotencialReducao()) {
             msg = "as espécies tem o mesmo potencial de redução. A pilha não funciona";
             JOptionPane.showMessageDialog(null, msg, "ERRO", JOptionPane.ERROR_MESSAGE);
-        } else if(m1.getPotencialReducao() > m2.getPotencialReducao()) {
-            float potencialPilha = m1.getPotencialReducao()-m2.getPotencialReducao();
+        } else if (m1.getPotencialReducao() > m2.getPotencialReducao()) {
+            float potencialPilha = m1.getPotencialReducao() - m2.getPotencialReducao();
             msg = "O metal que reduz é " + m1.getNome() + "\nO metal que oxida é " + m2.getNome() + "\nO potencial da pilha é " + potencialPilha + "\n";
             JOptionPane.showMessageDialog(null, msg, "potencial da pilha", JOptionPane.INFORMATION_MESSAGE);
-        } else if(m2.getPotencialReducao() > m1.getPotencialReducao()) {
-            float potencialPilha = m2.getPotencialReducao()-m1.getPotencialReducao();
+        } else if (m2.getPotencialReducao() > m1.getPotencialReducao()) {
+            float potencialPilha = m2.getPotencialReducao() - m1.getPotencialReducao();
             msg = "O metal que reduz é " + m2.getNome() + "\nO metal que oxida é " + m1.getNome() + "\nO potencial da pilha é " + potencialPilha + "\n";
             JOptionPane.showMessageDialog(null, msg, "potencial da pilha", JOptionPane.INFORMATION_MESSAGE);
         }
+        JOptionPane.showMessageDialog(null, formarEquacao(m1, m2), "Equação global", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static String formarEquacao(Metal m1, Metal m2) {
+
+        Metal reduz = m1.getPotencialReducao() > m2.getPotencialReducao() ? m1 : m2;
+        Metal oxida = reduz == m1 ? m2 : m1;
+
+        int eRed = reduz.getCarga();
+        int eOx = oxida.getCarga();
+
+        int mmc = mmc(eRed, eOx);
+        int fatorRed = mmc / eRed;
+        int fatorOx = mmc / eOx;
+
+        String semiReducao = fatorRed + reduz.getNome() + "^" + reduz.getCarga() + "+ + "
+                + (fatorRed * eRed) + " e⁻ → "
+                + fatorRed + reduz.getNome();
+
+        String semiOxidacao = fatorOx + oxida.getNome() + " → "
+                + fatorOx + oxida.getNome() + "^" + oxida.getCarga() + "+ + "
+                + (fatorOx * eOx) + " e⁻";
+
+        String global = fatorOx + oxida.getNome() + " + "
+                + fatorRed + reduz.getNome() + "^" + reduz.getCarga() + "+ → "
+                + fatorOx + oxida.getNome() + "^" + oxida.getCarga() + "+ + "
+                + fatorRed + reduz.getNome();
+
+        return "Oxidação:\n" + semiOxidacao
+                + "\n\nRedução:\n" + semiReducao
+                + "\n\nEquação Global:\n" + global;
+    }
+
+    private static int mmc(int a, int b) {
+        return a * b / mdc(a, b);
+    }
+
+    private static int mdc(int a, int b) {
+        while (b != 0) {
+            int r = a % b;
+            a = b;
+            b = r;
+        }
+        return a;
     }
 
     public static ArrayList<Metal> lerArquivos(String arquivo) {
@@ -54,7 +101,9 @@ public class Main {
 
     public static Metal procurarMetal(String nome, ArrayList<Metal> metais) {
         for (int i = 0; i < metais.size(); i++) {
-            if (metais.get(i).getNome().equals(nome)) return metais.get(i);
+            if (metais.get(i).getNome().equals(nome)) {
+                return metais.get(i);
+            }
         }
         return null;
     }
